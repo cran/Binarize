@@ -1,0 +1,449 @@
+\documentclass[a4paper]{article}
+
+\SweaveOpts{keep.source=TRUE}
+
+%\VignetteIndexEntry{Using the Binarize package} 
+
+\usepackage[utf8]{inputenc} 
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+%\usepackage{adjustbox}
+%\usepackage{algorithmic}
+%\usepackage{algorithm}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{float}
+
+%\newcommand{\argmax}[1]{\underset{#1}{\operatorname{argmax}}}
+%\newcommand{\argmin}[1]{\underset{#1}{\operatorname{argmin}}}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{0.2em}
+
+\title{Binarize}
+\author{Tamara J. Bl\"atte, Stefan Mundus, Ludwig Lausser, Martin Hopfensitz, \\ Christoph M\"ussel and Hans A. Kestler}
+
+\widowpenalty=10000
+\clubpenalty=10000
+
+\bibliographystyle{abbrv}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+\tableofcontents
+
+<<echo=FALSE>>=
+set.seed(13579)
+@
+
+\clearpage
+\section{Introduction}
+\texttt{Binarize} is an R package that provides three different methods for the binarization of one-dimensional data. The package also offers an assessment of the quality of the computed binarization as well as two different visualization functions for the results.
+
+Binarization is the process of dividing data into two groups and assigning one out of two values to all the members of the same group. This is usually accomplished by defining a threshold $t$ and assigning the value 0 to all the data points below the threshold and 1 to those above it. Binarization can thus be formulated as a threshold function $f : \mathbb{R} \rightarrow \mathbb{B}$ with 
+\begin{equation*}
+f(u) = \begin{cases} 0 & u \leq t\\ 1 & u > t \end{cases}
+\end{equation*}
+Accordingly, the binarized vector that corresponds to a real valued vector $\mathbf{u} = \left( u_1, \ldots, u_N \right) \in \mathbb{R}^N$ is  $\mathbf{b} = \left( f(u_1), \ldots, f(u_N) \right)$. 
+It is the aim of any binarization method that uses such a threshold $t$ to find the one that most appropriately splits the data in two. 
+A correct binarization is especially important considering that binarization is often part of the initial  preprocessing of a dataset. 
+This data preprocessing is the basis for all the methods and analyses that follow. 
+
+One important application of binarization is the reconstruction of Boolean networks from data. These networks model gene regulation by representing each gene as a binary variable to illustrate the two states "active/transcribed" and "inactive/not transcribed" \citep{kauffman69, kauffman93}. For gene expression data to be used in the reconstruction of such a network, the data has to be binarized beforehand \citep{laehdesmaeki03, liang98, maucher11, muessel10}. However, a binarization that does not correctly represent the distribution of the original data will have misleading effects on the resulting network. The \texttt{Binarize} package addresses this problem by offering a quality assessment of the computed binarization. Based on this assessment, genes that are only poorly binarizeable can be excluded from the network reconstruction. In this way, the quality of the reconstruction can be improved.
+
+The following sections describe three different binarization algorithms that each take a different approach to this common objective of finding an appropriate threshold and assessing the quality of the respective binarization.
+
+\section{Methods in the package}
+
+The package comprises three binarization methods that are associated with statistical testing procedures for quality control. These methods are described in the following.
+
+\subsection[Binarization by k-means clustering]{Binarization by $k$-means clustering}
+
+Binarization can be seen as a clustering problem: The aim is to sort the measurements into two groups in an unsupervised manner. A common clustering algorithm is the $k$-means algorithm~\cite{macqueen67} (with $k=2$) which is also used by the \texttt{Binarize} package. 
+In general, this algorithm starts by randomly picking $k$ initial cluster centers from the original data and then assigning the remaining points to the closest cluster center. 
+In several consecutive cycles the algorithm then updates this clustering by calculating the mean of each cluster's data, redefining the cluster centers to these mean values and reassigning all data points to the closest updated cluster center.
+
+In this way the algorithm tries to minimize the sum over the squared distance of the data points to their respective cluster center. This sum is given by
+\[ \sum_{j=1}^{k}{\sum_{u_i \in C_j}{\left( u_i - \mu_j \right)^2}},\]
+where $C_j$ is the $j$-th Cluster, $u_i$ is one value of the input vector, and $\mu_j$ is the center of the $j$-th cluster. 
+For binarization purposes the number of clusters $k$ is set to 2.
+
+
+\subsection{Binarization Across multiple SCales (BASC)}
+
+The BASC algorithms~\citep{hopfensitz12} are binarization techniques that aim at determining a robust binarization by analyzing the data at multiple scales. This packages implements two BASC variants called BASC~A and BASC~B. The BASC algorithms consider the sorted input values $\left( u_{(1)}, \ldots, u_{(N)} \right)$ as a step function and determine step functions with fewer steps that approximate this original function.
+
+A step function on a sorted input vector $\mathbf{u}$ can be generally defined as a function $s:\left(0, N\right] \rightarrow \left[ u_{(1)}, u_{(N)} \right]$ with (sorted) discontinuity positions $d_{(i)} \in \mathcal{D} \subseteq \lbrace 1, \ldots, N - 1 \rbrace$ 
+\begin{align*}
+s\left( x \right) &= \sum_{i = 1}^{\left|\mathcal{D}\right|+1}u_{(i)} \cdot \mathbb{I}_{\left[d_{(i-1)} < x \leq d_{(i)}\right]},
+\end{align*}
+where $d_{(0)} = 0$ and $d_{(\left|\mathcal{D}\right|+1)} = N$.
+
+Both algorithms can be divided into three steps:
+\begin{enumerate}
+ \item
+\emph{Compute a series of step functions: } From an initial step function that corresponds to the sorted measurements, step functions with fewer discontinuities are calculated. BASC~A determines step functions that minimize the Euclidean distance to this initial step function. BASC~B obtains step functions by smoothening the input function in a scale-space manner.
+  \item 
+      \emph{Find the strongest discontinuity in each step function: } 
+      The strongest discontinuity of each step function corresponds to a potential binarization threshold and is determined by a high jump size (derivative) in combination with a low approximation error.
+  \item 
+        \emph{Estimate location and variation of the strongest discontinuities: }
+        Based on these estimates, a statistical testing procedure can reject input vectors that yield an unreliable binarization.\newline
+ \end{enumerate}
+ 
+\subsubsection*{Computing a series of step functions}
+
+Starting with the initial step function $f$ given by the sorted input vector $\mathbf{u} \in \mathbb{R}^N$, the BASC algorithms determine step functions with fewer discontinuities.
+
+\paragraph{BASC~A} computes a set of $N - 2$ successive step functions with a decreasing number of discontinuities.
+For each number of discontinuities $n$, it chooses the step function  $s_n^* \in \mathcal{S}_n$ that minimizes the approximation error to the the initial step function $f$:
+\begin{equation*}
+s_n^* = \underset{s_n \in \mathcal{S}_n}{\arg\min} \sqrt{\sum_{x = 1}^{N}{\left( f(x) - s_n(x) \right)^2}}.
+\end{equation*}
+Here, $\mathcal{S}_n$ denotes the set of all possible step functions of $n$ discontinuities based on the input vector $\mathbf{u}$. For the identification of the optimal step functions $s_n^*$, BASC~A uses a dynamic programming strategy.
+
+\paragraph{BASC~B} differs from BASC~A in the way the step functions with a lower number of steps are calculated from the initial step function. First, this algorithm calculates the slopes of the original step function with $\triangle(x) = f'(x) = f(x+1) - f(x) \text{, } x \in \mathbb{N}$. After that, a set of smoothed versions is calculated by convolving $f'(x)$ with a kernel $T_\sigma(n)$ based on $I_n$, the modified Bessel function of order $n$:
+\begin{align*}
+\triangle_\sigma(x) &= \sum_{k=-\infty}^{\infty}{\triangle(x) \cdot T_\sigma(x - k)} \text{, with}\\
+T_\sigma(n) &= e^{-2 \sigma} \cdot I_{n}(2 \sigma),
+\end{align*}
+Here, $\sigma \in \mathbb{R}$ denotes the smoothing parameter. The smoothed version of the step function itself can be constructed from its smoothed derivative as follows:
+\[
+f_{\sigma}(x) = u_{(1)} + \sum_{n=1}^{\lceil x \rceil -1} \triangle_{\sigma}(n)
+\]
+BASC B utilizes  the maxima $M_{\sigma}$ of a smoothed slope function as discontinuity positions for constructing a step function $s_{\sigma}$   
+\begin{equation*}
+M_\sigma = \left\{ x \mid \triangle_\sigma(x - 1) < \triangle_\sigma(x) \wedge \triangle_\sigma(x + 1) < \triangle_\sigma(x) \right\}.
+\end{equation*}
+A variety of step functions is generated by utilizing different smoothing parameters $\sigma_1, \ldots, \sigma_S$. Possible duplicates are eliminated.
+
+\subsubsection*{Finding the strongest discontinuity in each step function}
+
+Once the series of step functions is calculated, both BASC algorithms continue in the same way. Every discontinuity $d_{(i)}\in \mathcal{D}$ of an optimal step function is scored according to two criteria. The first criterion is the jumping height $h(d_{(i)})$ at the discontinuity
+\begin{equation*}
+h(d_{(i)}) = \frac{1}{|\mathcal{N}_{i+1}|}\sum_{n \in \mathcal{N}_{i+1}} f(n) - \frac{1}{|\mathcal{N}_{i}|}\sum_{n \in \mathcal{N}_{i}}f(n)
+\end{equation*}
+where
+\begin{equation*}
+ \mathcal{N}_{i} = \left\{n \in \mathbb{N} : d_{(i-1)} < n \leq d_{(i)} \right\}
+\end{equation*}
+are the indices of the points from the original vector $\mathbf{u}$ that are located between the $(i-1)$-th and the $i$-th discontinuity.
+In this context, $f(d_{(i)})$ denotes the original step function in case of BASC A and the smoothed version of the original step function $f_{\sigma}(d_{(i)})$ for the current $\sigma$ in case of BASC B.
+
+The second criterion is the approximation error $e(d_{(i)})$ of a possible binarization threshold to the initial step function
+\begin{equation*}
+e(d_{(i)}) = \sum_{n=1}^{N}\left( f(n)-z(d_{(i)}) \right)^2 \quad \text{ with } \quad z(d_{(i)}) = \frac{f(d_{(i)})+f(d_{(i)}+1)}{2}.
+\end{equation*}
+
+A high score is reached by a large jumping height combined with a small approximation error. For each optimal step function, the position with the highest score
+\begin{equation*}
+v = \underset{d_{i} \in \mathcal{D}}{\mathrm{arg max} } \frac{h(d_{(i)})}{e(d_{(i)})}
+\end{equation*}
+is determined. This yields a vector $\mathbf{v}$ of possible binarization threshold locations for all step functions.
+
+\subsubsection*{Estimating location and variation of the strongest discontinuities}
+
+Each strongest step $v_i$ in $\mathbf{v}$ an optimal step function is a possible location for the binarization threshold $t$. The final binarization threshold is the median value of $\mathbf{v}$.
+BASC uses a bootstrap test to evaluate the robustness of this threshold. The null hypothesis of this test is that the expected normalized deviation of strongest discontinuities in step functions from the median is greater than or equal to a prespecified value $\tau \in (0,1]$ that balances the $\alpha$ error versus the $\beta$ error of the test.
+A significant $p$-value resulting from this test indicates that the number of different strongest step positions is low and that their values are within a small range, i.e. the computed binarization is of good quality.  Details on the testing procedure can be found in \cite{hopfensitz12}.
+
+\section{Application}
+
+In the following, the usage of the binarization methods and plot functions is illustrated using code examples. To execute these examples, the \texttt{Binarize} package must be properly installed in the R environment. This can be done by typing 
+<<eval=FALSE>>=
+install.packages("Binarize")
+@
+in an R console or by the corresponding menu entries in the R GUI. In a second step, the \texttt{Binarize} package is loaded via
+<<>>=
+library("Binarize")
+@
+The package must be installed only once, but it has to be loaded at the beginning of every R session. Only then are the methods and classes of the \texttt{Binarize} package available to the R workspace and ready to use.
+
+The binarization methods require at least an input vector of measurements $\mathbf{u} = \left( u_1, \ldots, u_N \right) \in \mathbb{R}^N$ with $N \geq 3$. Additional arguments depend on the particular method used and will be discussed in greater detail in the appropriate subsection below.  The method output of each function call is encapsulated into an S4 object whose class is either of type \texttt{BinarizationResult} or of a derived type with additional attributes. The class \texttt{BinarizationResult} contains the following attributes:
+\begin{itemize}
+\item{\textbf{originalMeasurements:} The original input vector $\mathbf{u}$}
+\item{\textbf{binarizedMeasurements:} The binarized vector $\mathbf{b}$ }
+\item{\textbf{method:} The name of the method used for the binarization}
+\item{\textbf{threshold:} The threshold $t$ used for the binarization}
+\item{\textbf{p.value:} A parameter that rates how well the method was able to binarize the original data}
+\end{itemize}
+In the following subsections, an artifical dataset is used to illustrate the application of each algorithm. This example dataset is a matrix with ten rows that each represent a feature vector to be binarized. Each feature vector consists of five random measurements sampled from one normal distribution $\mathcal{N}( 0,1 )$ and five measurements sampled from a second normal distribution. The mean of this second normal distribution varies between the different feature vectors in the dataset. It starts at 10 in the first feature vector (row of the dataset) and is decremented by one in each consecutive feature vector. In the last vector, the mean of the second normal distribution is therefore 1. To load the matrix and make the variable \texttt{binarizationExample} available in the R workspace, type
+<<>>=
+data(binarizationExample)
+@
+
+One would expect the binarization threshold for each feature vector in this dataset to be in-between the means of the two normal distributions from which the data points were sampled (see Figure~\ref{fig:density}).
+
+
+<<echo=FALSE,results=hide>>=
+pdf("density.pdf")
+par(mar=c(2,2,1,1))
+#plot(density(binarizationExample[1,]),main="")
+#abline(v=mean(binarizationExample[1,]), lty="dashed")
+plot(function(x)dnorm(x,mean=0,sd=1)+dnorm(x,mean=10,sd=1),xlim=c(-5,15),main="")
+abline(v=5, lty="dashed")
+dev.off()
+@
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=0.7\linewidth]{density.pdf}
+	\caption{The density function of the first feature vector of the \texttt{binarizationExample} dataset. The dashed line marks the mean of this row. The density functions of the other feature vectors in \texttt{binarizationExample} only differ in the distance between the two peaks of the normal distributions sampled from.}
+	\label{fig:density}
+\end{figure}
+
+\subsection[k-means]{$k$-means}
+
+To binarize the first feature vector of the \texttt{binarizationExample} dataset using the $k$-means algorithm, type:
+
+\begin{samepage}
+<<>>=
+bin <- binarize.kMeans(binarizationExample[1,])
+print(bin)
+@
+\end{samepage}
+
+In addition to the required input vector, other arguments may be passed. The most important one is \texttt{dip.test} which defaults to \texttt{TRUE}. If set to \texttt{TRUE}, Hartigan's dip test for unimodality~\cite{hartigan85} is performed on the input vector. If the test is significant, the assumption that the distribution of the data is unimodal is rejected. Thus, the corresponding $p$-value indicates how well the data is binarizeable.
+
+The function call results in an object of type \texttt{BinarizationResult} which contains the attributes listed above. These can be accessed using the \texttt{@} operator. E.g., to access the vector of binarized measurements, type:
+<<>>=
+print(bin@binarizedMeasurements)
+@
+
+A binarization can be visualized using the generic \texttt{plot()} method of the package. This method visualizes the computed binarization result using a one- or two- dimensional plot and can be applied to all binarization methods available in the package. The only required argument is an object of type \texttt{BinarizationResult} or \texttt{BASCResult}. To visualize the results of the binarization in a one-dimensional plot, type:
+<<eval=FALSE>>=
+plot(bin)
+@
+The resulting plot is shown in the left panel of Figure~\ref{fig:plotbin}. By setting the argument \texttt{twoDimensional} to \texttt{TRUE}, a two-dimensional plot can be created:
+<<eval=FALSE>>=
+plot(bin, twoDimensional=TRUE)
+@
+In this two-dimensional plot, the values of the input vector are plotted on the y-axis and their positions within the original input vector are aligned on the x-axis (see the right panel of Figure~\ref{fig:plotbin}).
+
+<<echo=FALSE,results=hide>>=
+pdf("plot_oneD.pdf")
+plot(bin)
+dev.off()
+pdf("plot_twoD.pdf")
+plot(bin, twoDimensional=TRUE)
+dev.off()
+@
+
+\begin{figure}[h]
+  \centering 
+	\subfigure{\includegraphics[width=0.49\linewidth]{plot_oneD.pdf}}
+	\hfill
+	\subfigure{\includegraphics[width=0.49\linewidth]{plot_twoD.pdf}}
+	\caption{Two plots that were created with \texttt{plot()} and illustrate the result of the binarization of \texttt{binarizationExample[1,]} using the $k$-means algorithm. The left picture shows a plot with the parameter \texttt{twoDimensional} set to \texttt{FALSE}, whereas \texttt{twoDimensional=TRUE} in the right plot.}
+	\label{fig:plotbin}
+\end{figure}
+
+
+\texttt{plot()} also accepts the arguments of the standard plotting methods like \texttt{col} and \texttt{pch}. This can be used to visualize two different groupings, such as a binarization and a class assignment, in the same plot. In this way, it is possible to see how much these two groupings coincide.
+
+For the next example, we assume that the class labels correspond to the distributions from which the data points in the \texttt{binarizationExample} dataset were sampled. Instead of the first feature vector, we take the last feature vector here, as the two classes cannot be clearly separated here:
+<<>>=
+label <- c(rep(0,5), rep(1,5))
+bin <- binarize.kMeans(binarizationExample[10,])
+@
+
+To display the class label simultaneously with a binarization result, we assign different colors and shapes to the corresponding data points:
+
+<<eval=FALSE>>=
+plot(bin, twoDimensional=TRUE, 
+     col=label+1, pch=label, 
+     showLegend=FALSE)
+@
+<<echo=FALSE,results=hide>>=
+pdf("plot_bin_with_label.pdf")
+plot(bin, twoDimensional=TRUE, col=label+1, pch=label, showLegend=FALSE)
+dev.off()
+@
+
+The plot is shown in Figure~\ref{fig:bin_with_label}.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.7\linewidth]{plot_bin_with_label.pdf}
+ \caption{A plot created with the \texttt{plot()} function where the threshold illustrates the binarization of the data and the color and shape of the data points correspond to the class label, i.e. the distribution the points were originally sampled from.}
+ \label{fig:bin_with_label}
+ \end{figure}
+ 
+So far, we have only binarized a single feature vector. To binarize all the feature vectors of a matrix at once, the \texttt{binarizeMatrix} method can be used. This method must be supplied with a matrix of measurements (one vector per row) as well as the binarization algorithm that should be used. To binarize \texttt{binarizationExample} using the $k$-Means algorithm, type:
+<<>>=
+binMatrix <- binarizeMatrix(binarizationExample, 
+                            method="kMeans")
+@
+The resulting matrix contains the binarized measurements, the binarization thresholds and the p-values of the different features' binarization in the respective rows. 
+As an additional argument, a method to correct the p-values for multiple testing may be passed via \texttt{adjustment}. All values that are accepted by \texttt{p.adjust} may be passed. Per default, no adjustment is applied. To binarize \texttt{binarizationExample} and adjust the resulting p-values according to the false discovery rate (FDR), type:
+<<>>=
+binMatrixFDR <- binarizeMatrix(binarizationExample, 
+                               method="kMeans",
+                               adjustment="fdr")
+@
+
+\subsection{BASC}
+
+The second binarization function in the \texttt{Binarize} package provides implementations of the two BASC variants. The following examples illustrate the use of the BASC algorithms. To binarize the first feature of \texttt{binarizationExample} using BASC~A, type:
+\begin{samepage}
+<<>>=
+bin <- binarize.BASC(binarizationExample[1,], method="A")
+print(bin)
+@
+\end{samepage}
+
+The required argument for \texttt{binarize.BASC()} is the input vector. The most important arguments that may be passed in addition are \texttt{method}, \texttt{tau} and \texttt{sigma}. \texttt{method} specifies the BASC algorithm to be used with \texttt{"A"} for BASC~A and \texttt{"B"} for BASC~B. If no method is specified, BASC~A is used by default.  An optional parameter \texttt{tau} adjusts the sensitivity and specificity of the statistical test that rates the quality of binarization. For BASC~B, the parameter \texttt{sigma} specifies a vector of different $\sigma$ values for the convolutions of the Bessel functions. 
+
+The function call returns an object of the type \texttt{BASCResult}. In addition to the attributes contained by objects of the type \texttt{BinarizationResult}, this type also contains the following attributes:
+\begin{itemize}
+\item{\textbf{intermediateSteps:} A matrix specifying the optimal step functions from which the binarization was calculated. The number of rows corresponds to the number of step functions and the number of columns is determined by the length of the input vector minus 2. From the first to the last row the number of steps per function increases. Non-zero entries represent the step locations, while rows with fewer steps than the input step function have entries in the matrix set to zero.}
+\item{\textbf{intermediateHeights:} A matrix specifying the jump heights of the steps supplied in \texttt{intermediateSteps}}
+\item{\textbf{intermediateStrongestSteps:} A vector with one entry for each step function, i.e. row in \texttt{intermediateSteps}. The entries specifiy the location of the strongest step of each function.}
+\end{itemize}
+E.g., one can view the locations of the strongest discontinuities in the reduced step functions by typing
+
+<<>>=
+print(bin@intermediateStrongestSteps)
+@
+It can be seen that the potential threshold locations of all step functions are the same for this feature. As there is no variation, the statistical test is also highly significant (see above).
+
+Apart from the generic \texttt{plot()} function demonstrated for the $k$-means binarization, a specialized plot for the BASC methods is supplied: The \texttt{plotStepFunctions()} method plots all the optimal step functions calculated by the BASC algorithms. The only required argument is an object of type \texttt{BASCResult}. To plot the step functions of such an object, type for example:
+
+<<echo=FALSE,results=hide>>=
+pdf("stepsA.pdf")
+plotStepFunctions(bin, connected=TRUE)
+dev.off()
+pdf("stepsB.pdf")
+plotStepFunctions(binarize.BASC(binarizationExample[1,], method="B"), connected=TRUE)
+dev.off()
+@
+<<eval=FALSE>>=
+plotStepFunctions(bin)
+@
+The corresponding plot can be seen in Figure~\ref{fig:stepsA}. Figure~\ref{fig:stepsB} shows the reduced number of step functions that BASC~B creates for the same data. It can be seen from the figure that the strongest steps (dashed lines) are the same for all step functions, which means that the binarization is very reliable. This is also indicated by the p-value of 0 in the result object. 
+\begin{figure}[!b]%[p]
+\centering
+\includegraphics[width=0.7\linewidth]{stepsA}
+\caption{The step functions calculated by BASC~A and the original step function of the \texttt{binarizationExample[1,]} data with an increasing number of steps from top to bottom.}
+\label{fig:stepsA}
+\end{figure}
+\pagebreak
+\begin{figure}[!t]%[p]
+\centering
+\includegraphics[width=0.7\linewidth]{stepsB}
+\caption{The computed step functions calculated by BASC~B and the original step function of the \texttt{binarizationExample[1,]} data with an increasing number of steps from top to bottom.}
+\label{fig:stepsB}
+\end{figure}
+
+
+
+\section{Quality assessment using statistical tests}
+
+As already mentioned, all binarization routines in the package provide a statistical testing procedure that evaluates the reliability of the binarization. While the dip test employed with $k$-means is based on the distribution of the original data, the bootstrap test of BASC assesses the variability of potential binarization thresholds.
+
+The statistical tests can be utilized to select a subset of reliable feature vectors from a set of features and to reject those features which do not show a clear separability into two groups. 
+
+The following example binarizes all 10 feature vectors of the \texttt{binarizationExample} dataset using $k$-means and determines the number of features with significant $p$-values:
+
+<<>>=
+binMatrix <- binarizeMatrix(binarizationExample, 
+                            method="kMeans",
+                            adjustment="fdr")
+significantRows <- sum(binMatrix[,12] < 0.05)
+print(significantRows)
+@
+As we performed 10 tests here, we have to correct the $p$-values for multiple testing. This is done according to the false discovery rate using the \texttt{adjustment} argument.
+
+For the BASC algorithms, the  code is analogous and yields the following numbers of significant features:
+
+\begin{samepage}
+BASC A:
+<<echo=FALSE>>=
+binarizations <- apply(binarizationExample, 1, binarize.BASC, method="A")
+pVals <- p.adjust(sapply(binarizations, function(x)
+    {
+      return(x@p.value)
+    }), method="fdr")
+  significantRows <- sum(pVals < 0.05)
+@
+<<>>=
+print(significantRows)
+@
+\end{samepage}
+\begin{samepage}
+BASC~B:
+<<echo=FALSE>>=
+binarizations <- apply(binarizationExample, 1, binarize.BASC, method="B")
+pVals <- p.adjust(sapply(binarizations, function(x)
+    {
+      return(x@p.value)
+    }), method="fdr")
+significantRows <- sum(pVals < 0.05)
+@
+<<>>=
+print(significantRows)
+@
+\end{samepage}
+
+It can be observed that the dip test employed with $k$-means is more restrictive than the bootstrap test in the BASC variants. The sensitivity and specificity of the bootstrap test can be adjusted by changing the \texttt{tau} parameter. 
+%Changes in \texttt{tau} therefore affect \texttt{p.value} but not \texttt{binarizedMeasurements} and \texttt{threshold}. 
+%This is illustrated below.
+
+%<<>>=
+%thresholds_per_tau <- sapply(tau_values, function(tau){
+%  binarized <- apply(binarizationExample, 1, binarize.BASC, method="B", tau=tau)
+%  thresholds <- sapply(binarized, function(x) return(x@threshold))
+%  return(thresholds)})
+%print(thresholds_per_tau)
+%@
+
+%\texttt{thresholds\_per\_tau} contains the thresholds of all ten rows in \texttt{binarizationExample} for each of the %\texttt{tau} values used.The output shows that the threshold of each row remains constant regardless of the changes %of \texttt{tau}.
+
+The following example demonstrates this:
+<<>>=
+tauValues <- seq(0,0.25, 0.05)
+print(tauValues)
+@
+The vector above stores different \texttt{tau} values. 
+For each of these values, \texttt{binarizationExample} is now binarized using BASC~B. The resulting number of features in \texttt{binarizationExample} with a $p$-value \textless~0.05 is stored in \texttt{significantFeatures} and printed out.
+\begin{samepage}
+<<>>=
+significantFeatures <- sapply(tauValues, function(tau)
+{
+  binMatrix <- binarizeMatrix(binarizationExample, 
+                              method="BASCB", 
+                              adjustment="fdr",
+                              tau=tau)
+  
+  significantRows <- sum(binMatrix[,12] < 0.05)  
+  return(significantRows)})
+
+names(significantFeatures) <- tauValues
+
+print(significantFeatures)
+@
+\end{samepage}
+
+It can be seen that different \texttt{tau} values result in a different number of significant features.
+The binarization thresholds themselves are independent of \texttt{tau} and remain unchanged when \texttt{tau} is changed. \\
+
+
+\bibliography{Vignette.bib}
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+

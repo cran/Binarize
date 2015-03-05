@@ -1,0 +1,34 @@
+useDynLib(Binarize)
+
+export(
+    binarize.BASC,
+    binarize.kMeans,
+    binarizeMatrix
+)
+
+import(methods)
+
+importFrom(
+    graphics,
+    plot
+)
+
+importFrom(
+    diptest,
+    dip.test
+)
+
+exportClasses(
+    BinarizationResult,
+    BASCResult
+)
+
+exportMethods(
+    show,
+    print,
+    plot,
+    plotStepFunctions
+    #,
+    #initialize
+)
+
