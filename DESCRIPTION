@@ -1,16 +1,17 @@
 Package: Binarize
 Type: Package
 Title: Binarization of One-Dimensional Data
-Version: 1.0
-Date: 2015-03-05
-Author: Stefan Mundus, Christoph Müssel, Ludwig Lausser, Tamara J. Blätte, Martin Hopfensitz, Hans A. Kestler
+Version: 1.1
+Date: 2015-07-01
+Author: Stefan Mundus, Christoph Müssel, Florian Schmid, Ludwig Lausser, Tamara J. Blätte, Martin Hopfensitz, Hans A. Kestler
 Maintainer: Hans Kestler <hans.kestler@uni-ulm.de>
 Description: Provides methods for the binarization of one-dimensional data and some visualization functions.
 License: Artistic-2.0
 LazyLoad: yes
+Imports: graphics, stats
 Depends: methods, diptest
 Encoding: UTF-8
-Packaged: 2015-03-05 16:07:18 UTC; muessel
+Packaged: 2015-07-02 12:03:16 UTC; schmid
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2015-03-05 22:03:50
+Date/Publication: 2015-07-15 13:23:24

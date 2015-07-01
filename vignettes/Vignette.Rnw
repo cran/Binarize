@@ -23,7 +23,7 @@
 \setlength{\parskip}{0.2em}
 
 \title{Binarize}
-\author{Tamara J. Bl\"atte, Stefan Mundus, Ludwig Lausser, Martin Hopfensitz, \\ Christoph M\"ussel and Hans A. Kestler}
+\author{Tamara J. Bl\"atte, Florian Schmid, Stefan Mundus, Ludwig Lausser, \\ Martin Hopfensitz, Christoph M\"ussel and Hans A. Kestler}
 
 \widowpenalty=10000
 \clubpenalty=10000
@@ -149,6 +149,47 @@ is determined. This yields a vector $\mathbf{v}$ of possible binarization thresh
 Each strongest step $v_i$ in $\mathbf{v}$ an optimal step function is a possible location for the binarization threshold $t$. The final binarization threshold is the median value of $\mathbf{v}$.
 BASC uses a bootstrap test to evaluate the robustness of this threshold. The null hypothesis of this test is that the expected normalized deviation of strongest discontinuities in step functions from the median is greater than or equal to a prespecified value $\tau \in (0,1]$ that balances the $\alpha$ error versus the $\beta$ error of the test.
 A significant $p$-value resulting from this test indicates that the number of different strongest step positions is low and that their values are within a small range, i.e. the computed binarization is of good quality.  Details on the testing procedure can be found in \cite{hopfensitz12}.
+
+
+\subsection{Trinarization Across multiple SCales (TASC)}
+
+\texttt{Binarize} includes extensions of the BASC algorithms that allow for the trinarization of a signal $f : \mathbb{R} \rightarrow \{0,1,2\}$. This type of data transformation discretizes a real-valued number $u$ into one of three levels according to two adapted thresholds $t_{1}$ and $t_{2}$,
+
+\begin{equation*}
+f(u) = \begin{cases} 0 & u \leq t_{1}\\ 1 & t_{1} < u \leq t_{2} \\ 2 & t_{2} < u \end{cases}.
+\end{equation*}
+
+The corresponding extensions are called TASC A and TASC B respectively. The search for an optimal pair of thresholds leads to modifications in the analysis of the optimal step functions. The TASC algorithms have to identify the strongest pair of discontinuities in each optimal step function. Afterwards the location and variation of the strongest pair of discontinuities have to be determined.
+
+%An extension of BASC is the TASC algorithm. Here two thresholds are determined which trinarize the data (split into three classes) in an intelligible way. To do that steps two (find the strongest discontinuity in each step function) and three (estimate location and variation of the strongest discontinuities) of the BASC algorithm must be modified. Determination of the step functions stays the same.
+
+\subsubsection*{Finding the strongest pair of discontinuities in each step function}
+
+%We now have to determine two break points $i$ and $k$ so we have to adapt the BASC criteria for scoring a single discontinuity $d$ in a way that  a score for pairs of discontinuities is calculated:
+
+BASCs evaluation criteria for a single optimal discontinuity must be replaced by a score for a pair of discontinuities at break points $i$, $k$ with $i < k$,
+
+\begin{equation*}
+v = \underset{d_{i}, d_{k} \in \mathcal{D}}{\mathrm{arg max} } \frac{h(d_{(i)}) + h(d_{(k)})}{2 e^{\mathrm{tri}}(d_{(i)},d_{(k)})}\text{, }i < k
+\end{equation*}
+In this context, the error function has to be replaced by
+\begin{align*}
+e^{\mathrm{tri}}(d_{(i)},d_{(k)}) = &\sum_{n=1}^{d_{(i)}}\left( f(n)-z(d_{(i)}) \right)^2 + \sum_{n= d_{(k)}}^{N}\left( f(n)-z(d_{(k)}) \right)^2\nonumber\\
++ &\frac{1}{2}\sum_{n=d_{(i)}}^{d_{(k)}}\left( f(n)-z(d_{(i)}) \right)^2 + \frac{1}{2}\sum_{n=d_{(i)}}^{d_{(k)}}\left( f(n)-z(d_{(k)}) \right)^2
+\end{align*}
+
+\subsubsection*{Estimating location and variation of the strongest discontinuities}
+
+For testing the robustness of a TASC result we use a bootstrap test with a test statistic similar to the one used for BASC. The difference is that here the normalized deviation of both thresholds is used for the calculation.
+
+
+
+
+
+
+
+
+
 
 \section{Application}
 
@@ -322,7 +363,7 @@ dev.off()
 <<eval=FALSE>>=
 plotStepFunctions(bin)
 @
-The corresponding plot can be seen in Figure~\ref{fig:stepsA}. Figure~\ref{fig:stepsB} shows the reduced number of step functions that BASC~B creates for the same data. It can be seen from the figure that the strongest steps (dashed lines) are the same for all step functions, which means that the binarization is very reliable. This is also indicated by the p-value of 0 in the result object. 
+The corresponding plot can be seen in Figure~\ref{fig:stepsA}. Figure~\ref{fig:stepsB} shows the reduced number of step functions that BASC~B creates for the same data. It can be seen from the figure that the strongest steps (dashed lines) are the same for all step functions, which means that the binarization is very reliable. This is also indicated by the p-value of 0.001 in the result object. 
 \begin{figure}[!b]%[p]
 \centering
 \includegraphics[width=0.7\linewidth]{stepsA}
@@ -338,10 +379,90 @@ The corresponding plot can be seen in Figure~\ref{fig:stepsA}. Figure~\ref{fig:s
 \end{figure}
 
 
+\subsection{TASC}
+
+The application of the TASC function is similar to the application of BASC. The method provides an implementation of TASC A and B, with calculation of step functions equal to BASC A and B respectively.
+
+The package includes an artificial dataset for illustrating the application of the trinarization algorithms. The dataset is (as the binarization dataset) a matrix. It consists of one hundred rows that each represent a feature vector to be trinarized. Each row consists of five random measurements sampled from a normal distribution $\mathcal{N}( 0,1 )$, five measurements sampled from a second normal distribution and 5 additional samples from a third normal distribution. The means of the second and third normal distribution vary between the different feature vectors in the dataset. The second starts at 10 in the first feature vector (row of the dataset) and is decremented by one in each consecutive feature vector until it is 1. The mean of the third distribution is decremented in steps of 2 with a maximum of 20 and a minimum of 2. This is repeated for each value of the second distribution. In the last vector, the mean of the second normal distribution is 1 and the mean of the third one is 2. To load the matrix and make the variable \texttt{trinarizationExample} available in the R workspace, type
+%An artificial dataset is included in the package to illustrate the application of the trinarization algorithms. The dataset is (as the binarization dataset) a matrix. It consists of one hundred rows that each represent a feature vector to be trinarized. Each row consists of five random measurements sampled from a normal distribution $\mathcal{N}( 0,1 )$, five measurements sampled from a second normal distribution and 5 additional samples from a third normal distribution. The means of the second and third normal distribution vary between the different feature vectors in the dataset. The second starts at 10 in the first feature vector (row of the dataset) and is decremented by one in each consecutive feature vector until it is 1. The mean of the third distribution is decremented in steps of 2 with a maximum of 20 and a minimum of 2. This is repeated for each value of the second distribution. In the last vector, the mean of the second normal distribution is 1 and the mean of the third one is 2. To load the matrix and make the variable \texttt{trinarizationExample} available in the R workspace, type
+<<>>=
+data(trinarizationExample)
+@
+
+The trinarization of the first row can be done by typing:
+
+\begin{samepage}
+<<>>=
+tri <- TASC(trinarizationExample[1,], method="A")
+print(tri)
+@
+\end{samepage}
+
+The arguments of the TASC function are equal to \texttt{binarize.BASC}. They are \texttt{method} to switch between TASC A and TASC B, \texttt{tau} for the sensitivity of the statistical test and \texttt{sigma} for the Bessel functions if TASC B is applied.
+
+The returned result is of type \texttt{TASCResult} which is a subclass of \texttt{TrinarizationResult}. A \texttt{TrinarizationResult} consists of the following elements:
+
+\begin{itemize}
+\item{\textbf{originalMeasurements:} The original input vector $\mathbf{u}$}
+\item{\textbf{trinarizedMeasurements:} The trinarized vector $\mathbf{b}$}
+\item{\textbf{method:} The name of the method used for the trinarization}
+\item{\textbf{threshold1:} The threshold $t_1$ used for the trinarization}
+\item{\textbf{threshold2:} The threshold $t_2$ used for the trinarization}
+\item{\textbf{p.value:} A parameter that rates how well the method was able to trinarize the original data}
+\end{itemize}
+
+The \texttt{TASCResult} additionally contains:
+
+\begin{itemize}
+\item{\textbf{intermediateSteps:} A matrix specifying the optimal step functions from which the binarization was calculated. The number of rows corresponds to the number of step functions and the number of columns is determined by the length of the input vector minus 2. From the first to the last row the number of steps per function increases. Non-zero entries represent the step locations, while rows with fewer steps than the input step function have entries in the matrix set to zero.}
+\item{\textbf{intermediateHeights1:} A matrix specifying the jump heights of the steps supplied in \texttt{intermediateSteps} for the first threshold}
+\item{\textbf{intermediateHeights2:} A matrix specifying the jump heights of the steps supplied in \texttt{intermediateSteps} for the second threshold}
+\item{\textbf{intermediateStrongestSteps:} A matrix with two columns and one row for each step function, i.e. row in \texttt{intermediateSteps}. The entries specifiy the location of the pair of strongest steps of each function.}
+\end{itemize}
+
+The location of the strongest steps can be viewed by typing 
+
+<<>>=
+print(tri@intermediateStrongestSteps)
+@
+
+It can be seen that the potential threshold locations of all step functions are the same as in the binarization example. As there is no variation, the statistical test is highly significant (see above).
+
+Analogously to the visualizations of binarization results there are functions for trinarization results included in the package:
+
+<<echo=FALSE,results=hide>>=
+pdf("triA.pdf")
+par(mfrow = c(1,2), mar = c(2,2,1,1))
+plotStepFunctions(tri, connected=TRUE)
+par(mar = c(2,2,1,1))
+plot(tri, twoDimensional = TRUE)
+dev.off()
+@
+<<eval=FALSE>>=
+plotStepFunctions(tri)
+plot(tri, twoDimensional = TRUE)
+@
+
+The corresponding plots can be seen in Figure~\ref{fig:triA}. It shows the step functions that TASC~A creates for the data. On the right the original data, trinarized into three groups is shown in two-dimensional space with the determined thresholds drawn as dashed lines.
+
+\begin{figure}[!b]%[p]
+\centering
+\includegraphics[width=\linewidth]{triA}
+\caption{Left: The step functions calculated by TASC~A and the original step function of the \texttt{trinarizationExample[1,]} data with an increasing number of steps from top to bottom. Right: The trinarized data in a two dimensional plot. The grouping is shown by the different colors. The thresholds are drawn as dashed lines.}
+\label{fig:triA}
+\end{figure}
+
+
+
+
+
+
+
+
 
 \section{Quality assessment using statistical tests}
 
-As already mentioned, all binarization routines in the package provide a statistical testing procedure that evaluates the reliability of the binarization. While the dip test employed with $k$-means is based on the distribution of the original data, the bootstrap test of BASC assesses the variability of potential binarization thresholds.
+As already mentioned, all binarization and trinarization routines in the package provide a statistical testing procedure that evaluates the reliability of the results. While the dip test employed with $k$-means is based on the distribution of the original data, the bootstrap test of BASC/TASC assesses the variability of potential thresholds.
 
 The statistical tests can be utilized to select a subset of reliable feature vectors from a set of features and to reject those features which do not show a clear separability into two groups. 
 

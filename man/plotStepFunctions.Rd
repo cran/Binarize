@@ -2,10 +2,10 @@
 \alias{plotStepFunctions}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Plot all step functions for BASC
+Plot all step functions for BASC or TASC
 }
 \description{
-A specialized visualization that plots all the optimal step functions computed by the BASC algorithms.
+A specialized visualization that plots all the optimal step functions computed by the BASC algorithms or TASC.
 }
 \usage{
 plotStepFunctions(x, 
@@ -16,7 +16,7 @@ plotStepFunctions(x,
 }
 \arguments{
   \item{x}{
-   A binarization result object of class \code{\linkS4class{BASCResult}}.
+   A binarization (or trinarisation) result object of class \code{\linkS4class{BASCResult}} (\code{\linkS4class{TASCResult}}).
   }
   \item{showLegend}{
    If \code{TRUE}, a legend is included in the plot.
@@ -33,12 +33,17 @@ plotStepFunctions(x,
 }
 
 \seealso{
-\code{\linkS4class{BASCResult}}, 
-\code{\link{binarize.BASC}}
+\code{\linkS4class{BASCResult}},
+\code{\link{binarize.BASC}},
+\code{\linkS4class{TASCResult}},
+\code{\link{TASC}} 
 }
 \examples{
 result <- binarize.BASC(iris[,"Petal.Width"], 
                         method="B")
+plotStepFunctions(result)
+
+result <- TASC(iris[,"Petal.Width"])
 plotStepFunctions(result)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

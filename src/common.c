@@ -350,7 +350,7 @@ void destroy_int_array(int_array* arr)
     free(arr);
 }
 
-/*
+
 void print_dbl_array(dbl_array* arr, const char* name)
 {
     int i;
@@ -396,7 +396,7 @@ void print_int_matrix(int_matrix* mat, const char* name)
         PRINT("\n");
     }
 }
-*/
+
 
 double mean(double* values, int a, int b)
 {
@@ -510,6 +510,7 @@ void blockwiseboot(int_array* result, int_array* originals)
         //Get a maximum of bl values from the original values starting at index random. If index == #elements the resampling is complete
         for(j = 0; j < bl && index < result->length; j++, index++)
         {
+            //printf("INDEX: %d; IND: %d, ORIGINALS: %d\n", index, (int)random + j, originals->values[(int)random + j]);
             result->values[index] = originals->values[(int)random + j];
         }
     }
@@ -540,7 +541,7 @@ void calc_final_results(final_result* result, int_array* v, dbl_array* vect, dbl
 
     t_zero = tau - nom;
 
-    *(result->p) = 0.0;
+    *(result->p) = 1.0;
 
     if(v->length < 3)
     {
@@ -566,7 +567,7 @@ void calc_final_results(final_result* result, int_array* v, dbl_array* vect, dbl
 
     //divide p by the number of samples, which is the maximal possible value for p
     //so p is in interval [0,1]
-    *(result->p) /= (double)numberofsamples;
+    *(result->p) /= ((double)numberofsamples + 1);
 
     destroy_int_array(samples);
 }

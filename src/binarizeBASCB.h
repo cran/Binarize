@@ -44,6 +44,13 @@ extern "C" {
     }
     calc_V_result;
 
+    typedef struct calc_V_result_tri{
+        int_matrix* v;
+        dbl_matrix* smoothedX;
+        dbl_matrix* meanlist;
+    }
+    calc_V_result_tri;
+
     double cost_Scalespace(dbl_array* vect, int a, int b, double y);
     #if SAVE_BESSEL_VALUES && !DEBUG_MODE
     void save_bessel_values();

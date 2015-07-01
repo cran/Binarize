@@ -5,7 +5,7 @@
 # quality requirement. With <numberofSamples> you can control the number of samples that are used for the bootstrap test.
 # <sigma> is only used for the BASC B algorithm and so it will be ignored if <method> equals "A". If <method>="B" then <sigma> should be a sequence
 # of ascending numbers and the values are used as parameters for the bessel function.
-binarize.BASC <- function(vect, method=c("A","B"), tau = 0.01, numberOfSamples = 1000, sigma = seq(0.1, 20, by=.1), na.rm=FALSE){    
+binarize.BASC <- function(vect, method=c("A","B"), tau = 0.01, numberOfSamples = 999, sigma = seq(0.1, 20, by=.1), na.rm=FALSE){    
     # Check type of input vector
     if(!is.numeric(vect))
         stop("The input vector must consist of numerical values!")    

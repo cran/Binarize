@@ -65,6 +65,14 @@ extern "C" {
         double* threshold;
     }
     final_result;
+    
+    typedef struct final_result_tri{
+        int_array* binarized_vector;
+        double* p;
+        double* threshold1;
+        double* threshold2;
+    }
+    final_result_tri;
 
     //extern int is_called_from_R;
 

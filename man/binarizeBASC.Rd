@@ -8,7 +8,7 @@ Binarization Across Multiple Scales
 binarize.BASC(vect, 
               method = c("A","B"), 
               tau = 0.01, 
-              numberOfSamples = 1000, 
+              numberOfSamples = 999, 
               sigma = seq(0.1, 20, by=.1),
               na.rm=FALSE)
 }
@@ -24,7 +24,7 @@ binarize.BASC(vect,
     This parameter adjusts the sensitivity and the specificity of the statistical testing procedure that rates the quality of the binarization. Defaults to 0.01.
   }
   \item{numberOfSamples}{
-    The number of samples for the bootstrap test. Defaults to 1000.
+    The number of samples for the bootstrap test. Defaults to 999.
   }
   \item{sigma}{
     If \code{method="B"}, this specifies a vector of different sigma values for the convolutions with the Bessel function. Ignored for \code{method="A"}.

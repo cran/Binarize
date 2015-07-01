@@ -3,15 +3,15 @@ useDynLib(Binarize)
 export(
     binarize.BASC,
     binarize.kMeans,
-    binarizeMatrix
+    binarizeMatrix,
+    trinarizeMatrix,
+    TASC
 )
 
 import(methods)
 
-importFrom(
-    graphics,
-    plot
-)
+importFrom("graphics", "plot", "par", "axis", "legend")
+importFrom("stats", "runif", "kmeans", "p.adjust")
 
 importFrom(
     diptest,
@@ -20,7 +20,9 @@ importFrom(
 
 exportClasses(
     BinarizationResult,
-    BASCResult
+    BASCResult,
+    TrinarizationResult,
+    TASCResult
 )
 
 exportMethods(
@@ -31,4 +33,3 @@ exportMethods(
     #,
     #initialize
 )
-
