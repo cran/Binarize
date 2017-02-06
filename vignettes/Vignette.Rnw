@@ -551,7 +551,7 @@ It can be seen that different \texttt{tau} values result in a different number o
 The binarization thresholds themselves are independent of \texttt{tau} and remain unchanged when \texttt{tau} is changed. \\
 
 
-\bibliography{Vignette.bib}
+\bibliography{Vignette}
 
 
 
