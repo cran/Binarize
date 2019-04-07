@@ -24,8 +24,11 @@ int enableWarnings(int val)
   INTEGER(CAR(t))[0] = val;
   SET_TAG(t, install("warn"));
   SEXP oldStatus;
-  PROTECT(oldStatus = coerceVector(eval(s, R_GlobalEnv),INTSXP));
-  UNPROTECT(2);
+  SEXP tmp;
+  /* PROTECT(oldStatus = coerceVector(eval(s, R_GlobalEnv),INTSXP)); */
+  PROTECT(tmp = eval(s,R_GlobalEnv));
+  PROTECT(oldStatus = coerceVector(tmp,INTSXP)); 
+  UNPROTECT(3);
   return INTEGER(oldStatus)[0];
 } 
 

@@ -472,7 +472,7 @@ setClass(
 		
 		#check object for weak errors
 		weak_invalid <- c(
-			as.logical(sum(dim(isteps) != dim(iheights1) || dim(isteps) != dim(iheights2))),
+			as.logical(sum(dim(isteps) != dim(iheights1)) || sum(dim(isteps) != dim(iheights2))),
 			nrow(istrsteps) != nrow(isteps),
 			(sum(isteps < 0) || sum(isteps > length(omeasure))),
 			(sum(istrsteps[,1] < 1) || sum(istrsteps[,1] > length(omeasure)) || sum(istrsteps[,2] < 1) || sum(istrsteps[,2] > length(omeasure)))

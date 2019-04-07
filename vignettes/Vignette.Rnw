@@ -13,8 +13,6 @@
 %\usepackage{algorithmic}
 %\usepackage{algorithm}
 \usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{float}
 
 %\newcommand{\argmax}[1]{\underset{#1}{\operatorname{argmax}}}
 %\newcommand{\argmin}[1]{\underset{#1}{\operatorname{argmin}}}
@@ -274,9 +272,9 @@ dev.off()
 
 \begin{figure}[h]
   \centering 
-	\subfigure{\includegraphics[width=0.49\linewidth]{plot_oneD.pdf}}
+	\includegraphics[width=0.49\linewidth]{plot_oneD.pdf}
 	\hfill
-	\subfigure{\includegraphics[width=0.49\linewidth]{plot_twoD.pdf}}
+	\includegraphics[width=0.49\linewidth]{plot_twoD.pdf}
 	\caption{Two plots that were created with \texttt{plot()} and illustrate the result of the binarization of \texttt{binarizationExample[1,]} using the $k$-means algorithm. The left picture shows a plot with the parameter \texttt{twoDimensional} set to \texttt{FALSE}, whereas \texttt{twoDimensional=TRUE} in the right plot.}
 	\label{fig:plotbin}
 \end{figure}
@@ -305,7 +303,7 @@ dev.off()
 
 The plot is shown in Figure~\ref{fig:bin_with_label}.
 
-\begin{figure}[H]
+\begin{figure}[h]
  \centering
  \includegraphics[width=0.7\linewidth]{plot_bin_with_label.pdf}
  \caption{A plot created with the \texttt{plot()} function where the threshold illustrates the binarization of the data and the color and shape of the data points correspond to the class label, i.e. the distribution the points were originally sampled from.}

@@ -1,4 +1,4 @@
-useDynLib(Binarize)
+useDynLib(Binarize, .registration = TRUE)
 
 export(
     binarize.BASC,
