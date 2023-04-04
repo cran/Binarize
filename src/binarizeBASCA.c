@@ -355,7 +355,7 @@ int alloc_Accelerator_Memory(int value_count)
 /*
  * Free the memory used for accelerating computations. This method also sets all pointers to 0.
  */
-void free_Accelerator_Memory()
+void free_Accelerator_Memory(void)
 {
     destroy_dbl_matrix(c);
     destroy_int_matrix(c_returned);

@@ -255,7 +255,7 @@ int alloc_Accelerator_Memory_tri(int value_count){
 /*
  * Free the memory used for accelerating computations. This method also sets all pointers to 0.
  */
-void free_Accelerator_Memory_tri(){
+void free_Accelerator_Memory_tri(void){
 
 	destroy_dbl_array(e_tri);
 	destroy_int_array(e_returned_tri);

@@ -34,7 +34,7 @@ extern "C" {
     //SEXP calc_p_value_R(SEXP vect, SEXP tau, SEXP numberofsamples);
 
     int alloc_Accelerator_Memory(int value_count);
-    void free_Accelerator_Memory();
+    void free_Accelerator_Memory(void);
 
 
 
