@@ -15,22 +15,22 @@ int_matrix* b_returned = 0;
 
 int enableWarnings(int val)
 {
-  SEXP s, t;
-  PROTECT(t = s = allocList(2));
-  SET_TYPEOF(s, LANGSXP);
-  SETCAR(t, install("options")); 
-  t = CDR(t);
-  SETCAR(t,allocVector(INTSXP, 1));
-  INTEGER(CAR(t))[0] = val;
-  SET_TAG(t, install("warn"));
-  SEXP oldStatus;
-  SEXP tmp;
-  /* PROTECT(oldStatus = coerceVector(eval(s, R_GlobalEnv),INTSXP)); */
-  PROTECT(tmp = eval(s,R_GlobalEnv));
-  PROTECT(oldStatus = coerceVector(tmp,INTSXP)); 
-  UNPROTECT(3);
-  return INTEGER(oldStatus)[0];
-} 
+    SEXP call, oldStatus, tmp;
+
+    // Create call: options(warn = val)
+    PROTECT(call = Rf_lang2(Rf_install("options"), Rf_allocVector(INTSXP, 1)));
+    INTEGER(CADR(call))[0] = val;
+    SET_TAG(CDR(call), Rf_install("warn"));
+
+    // Evaluate in R_GlobalEnv
+    PROTECT(tmp = Rf_eval(call, R_GlobalEnv));
+    PROTECT(oldStatus = Rf_coerceVector(tmp, INTSXP));
+
+    int res = INTEGER(oldStatus)[0];
+
+    UNPROTECT(3);
+    return res;
+}
 
 /*
  * Inverts the order of the written rows of a int_matrix. It works only for matrices which has written lines

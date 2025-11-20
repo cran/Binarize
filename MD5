@@ -1,4 +1,4 @@
-2b6a0392ec4cbdc466b78fdc748612b8 *DESCRIPTION
+af1a337c2394ae05fc2587191550710a *DESCRIPTION
 18602239f8f9f175006d0d323d90c57d *NAMESPACE
 c23564281d06fb6d11a2649540b05a56 *R/TASC.R
 3ef84c344696d057e7d12f1544ef4e04 *R/binarizeBASC.R
@@ -6,12 +6,12 @@ f6666f23d4042c4919a6a48bc4612bb8 *R/binarizeKMeans.R
 56ea36792be262fea53b7c62ca7d73ad *R/binarizeMatrix.R
 44f5052a874212a168f45a52e0408063 *R/result.R
 8e3ec290a7e65bd576ca06ad2ee4f892 *R/result_TASC.R
-1965123e8d9bc0c445bc681fd2d96557 *build/vignette.rds
+ae4162a7a30dce4229d8057db40da1fc *build/vignette.rds
 fc9db370b5bb1863ee917bd440bbecb0 *data/binarizationExample.rda
 a927fc5b2691799f70b36865417dd158 *data/trinarizationExample.rda
 494ae0f0838e970206eb3e02b2e59ac6 *inst/doc/Vignette.R
 b2127b60576768c035d446368b882d04 *inst/doc/Vignette.Rnw
-42894e1cd8256b460bbb3503404a080a *inst/doc/Vignette.pdf
+1dca0e1dd38cb5ace68068a07ffbdb34 *inst/doc/Vignette.pdf
 4debba7f71afa05bcc79351b89c01c3e *man/BASCResult-class.Rd
 401c73f7ca4b83ddf67292d1c829bc9f *man/BinarizationResult-class.Rd
 3151573ffe92b9ad11d3c4f78e3db1aa *man/TASC.Rd
@@ -30,7 +30,7 @@ a8f50a96141b0664a6e0967066703799 *src/TASC.c
 68fbc5d642737688a2646451572df4f0 *src/TASC_min.c
 7f96a60e7503b952f4370637145cb94c *src/binarizeBASCA.c
 fa68f76b6777b3931cb42b00da4baab9 *src/binarizeBASCA.h
-d8431d98225e31e3dae8c6af0b41fb6b *src/binarizeBASCB.c
+feb92d83bd1c4c511b8c2d000d4dfb52 *src/binarizeBASCB.c
 7eea456e141440430f008569341f3b5a *src/binarizeBASCB.h
 bbff24defd39a81a3ad43d7748bd64df *src/binarizeScanStatistic.h
 27d30ff71eb199a48262b56bdfd78650 *src/common.c
